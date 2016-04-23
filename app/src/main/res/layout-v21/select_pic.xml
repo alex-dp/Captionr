@@ -1,0 +1,50 @@
+<ScrollView android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        tools:context="eu.depa.captionr.SelectPic">
+
+        <TextView
+            android:id="@+id/intro_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:text="@string/initial_description"
+            android:padding="16dp"/>
+
+        <Button
+            android:id="@+id/button_take_a_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/take_photo"
+            android:layout_centerHorizontal="true"
+            android:onClick="takePhoto"
+            android:drawableStart="@drawable/ic_camera_white_24dp"
+            android:drawablePadding="8dp"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:textColor="@color/white"
+            android:layout_below="@id/intro_tv"/>
+
+        <Button
+            android:id="@+id/button_select_a_photo_in_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_image_in_album"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/button_take_a_photo"
+            android:onClick="selectImageInAlbum"
+            android:drawableStart="@drawable/ic_camera_roll_white_24dp"
+            android:drawablePadding="8dp"
+            android:backgroundTint="@color/colorPrimaryDark"
+            android:textColor="@color/white"/>
+
+    </RelativeLayout>
+</ScrollView>
