@@ -1,5 +1,6 @@
 package eu.depa.captionr;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -11,12 +12,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.gson.Gson;
 import com.microsoft.projectoxford.vision.VisionServiceClient;
 import com.microsoft.projectoxford.vision.VisionServiceRestClient;
@@ -34,6 +40,7 @@ public class Describe extends AppCompatActivity {
     private Bitmap mBitmap;
     private TextView mTextView;
     private VisionServiceClient client;
+    private Context context;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +49,8 @@ public class Describe extends AppCompatActivity {
 
         if (client == null)
             client = new VisionServiceRestClient(Constants.getRandKey());
+        if (context == null)
+            context = this;
 
         mTextView = (TextView) findViewById(R.id.desc_tv);
 
@@ -53,6 +62,34 @@ public class Describe extends AppCompatActivity {
             i.putExtra("from_widget", true);
             startActivityForResult(i, Constants.SELECT_START_ACTIVITY);
         } else startActivityForResult(new Intent(this, SelectPic.class), Constants.SELECT_START_ACTIVITY);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                final AdView ad = new AdView(context);
+                final RelativeLayout mom = (RelativeLayout) findViewById(R.id.desc_mom);
+                final AdRequest adRequest = new AdRequest.Builder().build();
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                params.addRule(RelativeLayout.BELOW, R.id.desc_tv);
+                params.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                params.setMargins(0, 256, 0, 64);
+
+                ad.setAdUnitId(Constants.SP_ad_unit_id);
+                ad.setAdSize(AdSize.BANNER);
+                ad.setLayoutParams(params);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mom != null)
+                            mom.addView(ad);
+                        ad.loadAd(adRequest);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -144,45 +181,6 @@ public class Describe extends AppCompatActivity {
         startActivity(i);
     }
 
-    private class doRequest extends AsyncTask<String, String, String> {
-        // Store error message
-        private Exception e = null;
-
-        public doRequest() {
-        }
-
-        @Override
-        protected String doInBackground(String... args) {
-            try {
-                return process();
-            } catch (Exception e) {
-                this.e = e;    // Store error
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String data) {
-            super.onPostExecute(data);
-            // Display based on error existence
-
-            mTextView.setText("");
-            if (e != null) {
-                mTextView.setText(e.getMessage());
-                this.e = null;
-            } else {
-                Gson gson = new Gson();
-                AnalysisResult result = gson.fromJson(data, AnalysisResult.class);
-
-                for (Caption caption : result.description.captions)
-                    mTextView.append(getBeginningFromConfidence(caption.confidence, caption.text) + " " + caption.text);
-
-                bloatShareIn();
-            }
-        }
-    }
-
     private void bloatShareIn() {
 
         View actionButton = findViewById(R.id.action_btn_share),
@@ -224,5 +222,44 @@ public class Describe extends AppCompatActivity {
         if (wheel != null)
             wheel.setVisibility(View.VISIBLE);
         startActivityForResult(new Intent(this, SelectPic.class), Constants.SELECT_START_ACTIVITY);
+    }
+
+    private class doRequest extends AsyncTask<String, String, String> {
+        // Store error message
+        private Exception e = null;
+
+        public doRequest() {
+        }
+
+        @Override
+        protected String doInBackground(String... args) {
+            try {
+                return process();
+            } catch (Exception e) {
+                this.e = e;    // Store error
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            super.onPostExecute(data);
+            // Display based on error existence
+
+            mTextView.setText("");
+            if (e != null) {
+                mTextView.setText(e.getMessage());
+                this.e = null;
+            } else {
+                Gson gson = new Gson();
+                AnalysisResult result = gson.fromJson(data, AnalysisResult.class);
+
+                for (Caption caption : result.description.captions)
+                    mTextView.append(getBeginningFromConfidence(caption.confidence, caption.text) + " " + caption.text);
+
+                bloatShareIn();
+            }
+        }
     }
 }

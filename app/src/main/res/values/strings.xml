@@ -6,7 +6,7 @@
     <string name="thinking_ellipsis">Thinking&#8230;</string>
     <string name="initial_description">I can understand the content of any image and I\'ll try to describe it as any human would.\nI\'m still learning so I\'ll hold onto your photo, but no personal info.</string>
     <string name="about">About</string>
-    <string name="info_main_str">Captionr is a wrapper app for <a href="https://microsoft.com/cognitive-services/en-us/computer-vision-api">Microsoft\'s computer vision engine</a>.\n\nI won\'t keep any of the data you provide, although Microsoft might do that.</string>
+    <string name="info_main_str">Captionr is a wrapper app for <a href="https://microsoft.com/cognitive-services/en-us/computer-vision-api">Microsoft\'s computer vision engine</a>.\n\nI won\'t keep any of the data you provide, although Microsoft might do that.\n\nThe source code is available <a href="http://github.com/deeepaaa/Captionr">here</a>.</string>
     <string name="donate">Donate</string>
     <string name="ad_act_str">By watching the ad below, you are supporting the development of Captionr.</string>
 </resources>

@@ -48,7 +48,8 @@ public class AdActivity extends AppCompatActivity {
                     @Override
                     public void run() {
 
-                        mom.addView(ad);
+                        if (mom != null)
+                            mom.addView(ad);
 
                         ad.loadAd(adRequest);
 
