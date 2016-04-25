@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -15,12 +14,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +62,7 @@ public class SelectPic extends AppCompatActivity {
             intent.setData(imageUri);
             setResult(RESULT_OK, intent);
             finish();
-        } else Toast.makeText(SelectPic.this, "there was an unexpected error", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void takePhoto(View view) {

@@ -33,6 +33,7 @@ import com.microsoft.projectoxford.vision.rest.VisionServiceException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Random;
 
 public class Describe extends AppCompatActivity {
 
@@ -48,7 +49,7 @@ public class Describe extends AppCompatActivity {
         setContentView(R.layout.describe);
 
         if (client == null)
-            client = new VisionServiceRestClient(Constants.getRandKey());
+            client = new VisionServiceRestClient(Constants.keys[new Random().nextInt(Constants.keys.length)]);
         if (context == null)
             context = this;
 
@@ -57,11 +58,10 @@ public class Describe extends AppCompatActivity {
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        if (getIntent().getBooleanExtra("from_widget", false)){
-            Intent i = new Intent(this, SelectPic.class);
+        Intent i = new Intent(this, SelectPic.class);
+        if (getIntent().getBooleanExtra("from_widget", false))
             i.putExtra("from_widget", true);
-            startActivityForResult(i, Constants.SELECT_START_ACTIVITY);
-        } else startActivityForResult(new Intent(this, SelectPic.class), Constants.SELECT_START_ACTIVITY);
+        startActivityForResult(i, Constants.SELECT_START_ACTIVITY);
 
         new Thread(new Runnable() {
             @Override
@@ -154,6 +154,7 @@ public class Describe extends AppCompatActivity {
     private String process() throws VisionServiceException, IOException {
         Gson gson = new Gson();
 
+        client = new VisionServiceRestClient(Constants.keys[new Random().nextInt(Constants.keys.length)]);
         // Put the image into an input stream for detection.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
@@ -249,8 +250,19 @@ public class Describe extends AppCompatActivity {
 
             mTextView.setText("");
             if (e != null) {
-                mTextView.setText(e.getMessage());
+                mTextView.setText("Just a moment...");
                 this.e = null;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                        new doRequest().execute();
+                    }
+                }).start();
             } else {
                 Gson gson = new Gson();
                 AnalysisResult result = gson.fromJson(data, AnalysisResult.class);

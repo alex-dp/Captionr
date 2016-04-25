@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/button_take_a_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawablePadding="8dp"
+        android:onClick="takePhoto"
+        android:padding="8dp"
+        android:text="@string/take_photo"
+        android:textAllCaps="true"
+        android:textColor="@color/colorPrimaryDark" />
+
+    <Button
+        android:id="@+id/button_select_a_photo_in_album"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:drawablePadding="8dp"
+        android:onClick="selectImageInAlbum"
+        android:padding="8dp"
+        android:text="@string/select_image_in_album"
+        android:textAllCaps="true"
+        android:textColor="@color/colorPrimaryDark" />
+</LinearLayout>
