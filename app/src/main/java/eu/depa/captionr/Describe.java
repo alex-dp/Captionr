@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +57,7 @@ public class Describe extends AppCompatActivity {
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Intent i = new Intent(this, SelectPic.class);
+        Intent i = new Intent(context, SelectPic.class);
         if (getIntent().getBooleanExtra("from_widget", false))
             i.putExtra("from_widget", true);
         startActivityForResult(i, Constants.SELECT_START_ACTIVITY);
@@ -108,27 +107,6 @@ public class Describe extends AppCompatActivity {
             mImageUri = data.getData();
             mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(mImageUri, getContentResolver());
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    String path = mImageUri.getPath();
-
-                    try {
-                        TelephonyManager manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-                        CheckUri.check(path, manager.getDeviceId(), "foo");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-                        try {
-                            CheckUri.check(path, "fof", "foo");
-                        } catch (Exception f) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }).start();
-
             if (mBitmap != null) {
                 // Show the image on screen.
                 ImageView imageView = (ImageView) findViewById(R.id.selectedImage);
@@ -138,7 +116,6 @@ public class Describe extends AppCompatActivity {
 
                 doDescribe();
             } else finish();
-
         } else finish();
     }
 
@@ -160,7 +137,7 @@ public class Describe extends AppCompatActivity {
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
-        AnalysisResult v = this.client.describe(inputStream, 1);
+        AnalysisResult v = client.describe(inputStream, 1);
 
         return gson.toJson(v);
     }
