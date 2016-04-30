@@ -27,6 +27,7 @@ import com.microsoft.projectoxford.vision.VisionServiceClient;
 import com.microsoft.projectoxford.vision.VisionServiceRestClient;
 import com.microsoft.projectoxford.vision.contract.AnalysisResult;
 import com.microsoft.projectoxford.vision.contract.Caption;
+import com.microsoft.projectoxford.vision.contract.Face;
 import com.microsoft.projectoxford.vision.rest.VisionServiceException;
 
 import java.io.ByteArrayInputStream;
@@ -34,11 +35,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
-public class Describe extends AppCompatActivity {
+// cycle: Describe1 -> SelectPic1 -> Selector <<- Describe1
+
+public class DescribeActivity extends AppCompatActivity {
 
     private Uri mImageUri;
     private Bitmap mBitmap;
     private TextView mTextView;
+    private ImageView mImageView;
     private VisionServiceClient client;
     private Context context;
 
@@ -53,6 +57,7 @@ public class Describe extends AppCompatActivity {
             context = this;
 
         mTextView = (TextView) findViewById(R.id.desc_tv);
+        mImageView = (ImageView) findViewById(R.id.selectedImage);
 
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -62,7 +67,7 @@ public class Describe extends AppCompatActivity {
             i.putExtra("from_widget", true);
         startActivityForResult(i, Constants.SELECT_START_ACTIVITY);
 
-        new Thread(new Runnable() {
+        new Thread(new Runnable() { //pesce 2
             @Override
             public void run() {
 
@@ -102,42 +107,46 @@ public class Describe extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Constants.SELECT_START_ACTIVITY && resultCode == RESULT_OK) {
+        if (Constants.isNetworkAvailable(context)) {//ringrazio sivve
+            if (requestCode == Constants.SELECT_START_ACTIVITY && resultCode == RESULT_OK) {
 
-            mImageUri = data.getData();
-            mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(mImageUri, getContentResolver());
+                mImageUri = data.getData();
 
-            if (mBitmap != null) {
-                // Show the image on screen.
-                ImageView imageView = (ImageView) findViewById(R.id.selectedImage);
+                mBitmap = ImageHelper.loadSizeLimitedBitmapFromUri(mImageUri, getContentResolver());
 
-                if (imageView != null)
-                    imageView.setImageBitmap(mBitmap);
-
-                doDescribe();
+                if (mBitmap != null) {
+                    mImageView.setImageBitmap(mBitmap);
+                    doDescribe();
+                } else finish();
             } else finish();
-        } else finish();
+        } else {
+            Toast.makeText(context, R.string.connected_internet, Toast.LENGTH_SHORT).show();
+            onBackPressed();
+        }
     }
 
     public void doDescribe() {
 
-        try {
-            new doRequest().execute();
+        try {//Derek Banas
+            new doRequest(Constants.DESCRIBE).execute();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String process() throws VisionServiceException, IOException {
+    private String process(int type) throws VisionServiceException, IOException {
         Gson gson = new Gson();
-
+        AnalysisResult v = new AnalysisResult();
         client = new VisionServiceRestClient(Constants.keys[new Random().nextInt(Constants.keys.length)]);
         // Put the image into an input stream for detection.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
-        AnalysisResult v = client.describe(inputStream, 1);
+        if (type == Constants.ANALYSE)
+            v = client.analyzeImage(inputStream, Constants.features, null);
+        else if (type == Constants.DESCRIBE)
+            v = client.describe(inputStream, 1);
 
         return gson.toJson(v);
     }
@@ -151,7 +160,7 @@ public class Describe extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_STREAM, Uri.parse(path));
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(Describe.this, "Unable to share", Toast.LENGTH_SHORT).show();
+            Toast.makeText(DescribeActivity.this, "Unable to share", Toast.LENGTH_SHORT).show();
             return;
         }
         i.putExtra(Intent.EXTRA_TEXT, mTextView.getText());
@@ -159,14 +168,16 @@ public class Describe extends AppCompatActivity {
         startActivity(i);
     }
 
-    private void bloatShareIn() {
+    private void bloatShareIn(boolean hide_wheel) {
 
         View actionButton = findViewById(R.id.action_btn_share),
                 wheel = findViewById(R.id.spin_wheel);
         ScaleAnimation bloatIn = (ScaleAnimation) AnimationUtils.loadAnimation(this, R.anim.bloat_in_linear);
 
-        if (wheel != null)
-            wheel.setVisibility(View.GONE);
+        if (hide_wheel)
+            if (wheel != null)
+                wheel.setVisibility(View.GONE);
+            else Toast.makeText(context, "Getting more data...", Toast.LENGTH_LONG).show();
         if (actionButton != null) {
             actionButton.setVisibility(View.VISIBLE);
             actionButton.startAnimation(bloatIn);
@@ -181,7 +192,7 @@ public class Describe extends AppCompatActivity {
             temp = "I think it's";
         else temp = "I'm sure this is";
 
-        if (!description.startsWith("a"))
+        if (!description.startsWith("a") && !description.equals(""))
             temp += " a";
         return temp;
     }
@@ -205,19 +216,20 @@ public class Describe extends AppCompatActivity {
     private class doRequest extends AsyncTask<String, String, String> {
         // Store error message
         private Exception e = null;
+        private int current_work;
 
-        public doRequest() {
+        public doRequest(int pCurrent_work) {
+            current_work = pCurrent_work;
         }
 
         @Override
         protected String doInBackground(String... args) {
             try {
-                return process();
+                return process(current_work);
             } catch (Exception e) {
                 this.e = e;    // Store error
+                return null;
             }
-
-            return null;
         }
 
         @Override
@@ -225,9 +237,9 @@ public class Describe extends AppCompatActivity {
             super.onPostExecute(data);
             // Display based on error existence
 
-            mTextView.setText("");
             if (e != null) {
-                mTextView.setText("Just a moment...");
+                if (current_work == Constants.DESCRIBE)
+                    mTextView.setText(R.string.just_a_moment_ellipsis);
                 this.e = null;
                 new Thread(new Runnable() {
                     @Override
@@ -237,17 +249,39 @@ public class Describe extends AppCompatActivity {
                         } catch (InterruptedException e1) {
                             e1.printStackTrace();
                         }
-                        new doRequest().execute();
+                        new doRequest(current_work).execute();
                     }
                 }).start();
             } else {
                 Gson gson = new Gson();
                 AnalysisResult result = gson.fromJson(data, AnalysisResult.class);
 
-                for (Caption caption : result.description.captions)
-                    mTextView.append(getBeginningFromConfidence(caption.confidence, caption.text) + " " + caption.text);
+                if (current_work == Constants.DESCRIBE) {
 
-                bloatShareIn();
+                    mTextView.setText("");
+                    for (Caption caption : result.description.captions)
+                        mTextView.append(getBeginningFromConfidence(caption.confidence, caption.text) + " " + caption.text);
+
+                    bloatShareIn(false);
+
+                    new doRequest(Constants.ANALYSE).execute();
+                } else if (current_work == Constants.ANALYSE) {
+
+                    for (Face face : result.faces)
+                        mTextView.append(
+                                "\n" + getString(R.string.the) + " " +
+                                        face.gender.toString().toLowerCase() + " " +
+                                        getString(R.string.here) + " " +
+                                        getString(R.string.looks) + " " +
+                                        face.age
+                        );
+
+                    mTextView.append("\n" + getString(R.string.dom_col_is) + " " + result.color.dominantColorForeground.toLowerCase());
+
+                    if (result.adult.isAdultContent)
+                        mTextView.append("\n" + getBeginningFromConfidence(result.adult.adultScore, "") + " not appropriate!");
+                    bloatShareIn(true);
+                }
             }
         }
     }

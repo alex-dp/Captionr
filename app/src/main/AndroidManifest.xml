@@ -14,7 +14,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Describe"
+        <activity
+            android:name=".DescribeActivity"
             android:configChanges="orientation|layoutDirection|screenSize|screenLayout">
 
             <intent-filter>

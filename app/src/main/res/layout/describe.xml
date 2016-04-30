@@ -23,7 +23,8 @@
             android:gravity="center"
             android:padding="16dp"
             android:text="@string/thinking_ellipsis"
-            android:textAppearance="?android:textAppearanceMedium"/>
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/darkGray" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/action_btn_share"

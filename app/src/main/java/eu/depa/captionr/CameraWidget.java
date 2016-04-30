@@ -14,7 +14,7 @@ public class CameraWidget extends AppWidgetProvider {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
 
         for (int appWidgetId : appWidgetIds) {
-            Intent intent = new Intent(context, Describe.class);
+            Intent intent = new Intent(context, DescribeActivity.class);
             intent.putExtra("from_widget", true);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
