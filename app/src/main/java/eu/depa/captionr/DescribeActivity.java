@@ -33,7 +33,6 @@ import com.microsoft.projectoxford.vision.rest.VisionServiceException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Random;
 
 // cycle: Describe1 -> SelectPic1 -> Selector <<- Describe1
 
@@ -45,6 +44,7 @@ public class DescribeActivity extends AppCompatActivity {
     private ImageView mImageView;
     private VisionServiceClient client;
     private Context context;
+    private int current = Constants.keys.length - 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,7 +52,7 @@ public class DescribeActivity extends AppCompatActivity {
         setContentView(R.layout.describe);
 
         if (client == null)
-            client = new VisionServiceRestClient(Constants.keys[new Random().nextInt(Constants.keys.length)]);
+            client = new VisionServiceRestClient(Constants.keys[current]);
         if (context == null)
             context = this;
 
@@ -137,7 +137,7 @@ public class DescribeActivity extends AppCompatActivity {
     private String process(int type) throws VisionServiceException, IOException {
         Gson gson = new Gson();
         AnalysisResult v = new AnalysisResult();
-        client = new VisionServiceRestClient(Constants.keys[new Random().nextInt(Constants.keys.length)]);
+        client = new VisionServiceRestClient(Constants.keys[current]);
         // Put the image into an input stream for detection.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
@@ -241,6 +241,9 @@ public class DescribeActivity extends AppCompatActivity {
                 if (current_work == Constants.DESCRIBE)
                     mTextView.setText(R.string.just_a_moment_ellipsis);
                 this.e = null;
+                current -= 2;
+                if (current < 0)
+                    current = Constants.keys.length - 1;
                 new Thread(new Runnable() {
                     @Override
                     public void run() {

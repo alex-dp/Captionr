@@ -23,12 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <intent-filter>
+            <intent-filter
+                android:icon="@mipmap/ic_launcher"
+                android:label="@string/describe">
                 <action android:name="android.intent.action.SEND" />
-                <data
-                    android:mimeType="image/*"
-                    android:scheme="file|content|*" />
-                <category android:name="android.intent.category.OPENABLE" />
+                <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
 
